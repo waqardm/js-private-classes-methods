@@ -74,8 +74,8 @@ class Employee {
 ```
 On the code above, we assume that `other` is an `instanceof` the class Employee.
 
-### Why using # to declare private fields?
-If you already worked with other languages that support private fields on classes you must be used to the private keyword. That’s OK for these languages because the access to public and **private** fields are the same. On JavaScript, we can’t use `this.field` to access private fields as this would create unexpected behaviour on our code and lead to many performance issues.
+### Why use # to declare private fields?
+If you have already worked with other languages that support private fields on classes you must be used to the private keyword. That’s OK for these languages because the access to public and **private** fields are the same. On JavaScript, we can’t use `this.field` to access private fields as this would create unexpected behaviour on our code and lead to many performance issues.
 
 ### Benefits of having private fields
 So, if you’re not convinced yet about why having private fields on JavaScript classes, let’s take a look when it comes to creating libraries. When you create a library, you want to provide your users with a clean and stable API. That means that you don’t want them to access things they aren’t supposed to and that you can change the work behind the curtain as long as the API remains functional. Private fields are very useful for this, let’s check a use case for that. 
