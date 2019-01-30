@@ -74,8 +74,8 @@ class Employee {
 ```
 On the code above, we assume that `other` is an `instanceof` the class Employee.
 
-### Why using # to declare private fields?
-If you already worked with other languages that support private fields on classes you must be used to the private keyword. That’s OK for these languages because the access to public and **private** fields are the same. On JavaScript, we can’t use `this.field` to access private fields as this would create unexpected behaviour on our code and lead to many performance issues.
+### Why use # to declare private fields?
+If you have already worked with other languages that support private fields on classes you must be used to the private keyword. That’s OK for these languages because the access to public and **private** fields are the same. On JavaScript, we can’t use `this.field` to access private fields as this would create unexpected behaviour on our code and lead to many performance issues.
 
 ### Benefits of having private fields
 So, if you’re not convinced yet about why having private fields on JavaScript classes, let’s take a look when it comes to creating libraries. When you create a library, you want to provide your users with a clean and stable API. That means that you don’t want them to access things they aren’t supposed to and that you can change the work behind the curtain as long as the API remains functional. Private fields are very useful for this, let’s check a use case for that. 
@@ -132,5 +132,31 @@ async #fetchPokemons () {
 ```
 Now, with the code above, the only source that the user can get the Pokémons info is by using the only public method: `getPokemons` . That way, we can totally change how our library works as long as the `getPokemons` method keeps its behaviour.
 
+### `#` is the New `_`
+For those used to utilising the `_` to declare private fields and methods, the `#` is essentially identical with one key difference best shown in the example below.
+
+#### Using the `_`
+```javascript
+class Marker {
+  constructor (lat, lng) {
+    this._lat = lat;
+    this._lng = lng;
+  }
+}
+const newMarker = new Marker(38.7652793, -9.0958296);
+newMarker._lat; // accessible from outside of the class
+```
+
+#### Using the `#`
+```javascript
+class Marker {
+  #lat;
+  #lng;
+  constructor (lat, lng) {
+    this.#lat = lat;
+    this.#lng = lng; // not accessible from outside of the class
+  }
+}
+```
 ### Conclusion
 Private fields and methods are a basic feature when working with Object-Oriented code, bringing this to the JavaScript language is taking a step forward on helping us engineers to write code, creating apps or libraries, in a much cleaner way. We hope that this article is helpful in understanding how the private fields and methods work in JavaScript and the importance of having this support on the language.
