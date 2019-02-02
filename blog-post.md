@@ -1,32 +1,65 @@
 # JavaScript Class Private Fields and Methods
 
-We all remember how we used to work on JavaScript before the support for classes. Working with **prototype** wasn’t a good experience and could lead to many issues, also if someone not familiarized with it had to work with the code it could be a nightmare.
+Many of us will remember what it was like to work with object oriented JavaScript before ES6 introduced support for Classes. Working with **prototype** wasn't an optimal experience, and could lead to confusion for programmers not familiar with it.
 
-### Classes
-Fortunately for us, **Classes** were introduced on **ECMAScript 2015 (the worldwide famous ES6)**. Now we can work with classes without the messy code of dealing with the prototype.
+## Classes
+Fortunately for us, **Classes** were introduced in **ECMAScript 2015 (ES6)**. Now we can work with classes without the need to deal with the prototype ourselves.
+
+They support methods (what we will refer to later as public methods), and more recently, public fields.
 
 ```javascript
 class Animal {
+
+  name; // public field
+
   constructor (name) {
     this.name = name;
   }
+
+  whatsMyName () { // public method
+    return this.name;
+  }
 }
+
+const cat = new Animal('Chaos');
+console.log(cat.whatsMyName()); // "Chaos"
 ```
-And we can even work with Class Inheritance:
+
+They also support inheritance:
+
 ```javascript
 class Dog extends Animal {
   constructor (name) {
     super(name);
   }
+
+  whatsMyName () {
+    return `I am a dog and my name is ${this.name;}`;
+  }
+}
+
+const dog = new Dog('Frederick');
+console.log(dog.whatsMyName()); // "I am a dog and my name is Frederick"
+```
+
+If you've worked with other Object-Oriented languages, you'll agree that this is a great addition to the language. But as you start working more with Classes in JavaScript you will find yourself missing something that’s common in other languages: **private fields**. Until now JavaScript hasn't supported private fields on classes, but there’s a **Stage 3 TC39 proposal** to change this. Before we talk about these, a quick refresher on public fields.
+
+## Public fields
+
+`name` in the `Animal` example above shows a public field in use. You can also initialise it in situ to give it a default value.
+
+```javascript
+class Animal {
+  name = 'Fred';
 }
 ```
 
-That’s really great and if you already worked with other **Object-Oriented Languages**, this for sure brings JavaScript up to the game.
+Public fields are added either at construction time in the base class, or after super() returns in a subclass.
 
-But when you start working more with Classes on JavaScript you will miss something that’s really common in other languages: Private Fields. Until now JavaScript doesn’t support **private fields** on classes, but there’s a **Stage 3 proposal on TC39** to add this support and that’s what I’ll talk about.
+## Private fields: # is the new _
 
-### A little about private fields on JavaScript
-So let’s start checking the syntax on how private fields will work on JavaScript. To declare any property or method inside a class as private we only need to prepend the name of it with `#`. Check the example below:
+So, let’s take a look at the syntax of private fields. You may have seen code in the past that used `_` as a prefix to indicate that a property or method was private. Well **# is the new _**. To declare that we want a field in our class to be private, we use a # name (said "hash name"). Check out this example:
+
 ```javascript
 class Marker {
   #lat;
@@ -37,100 +70,157 @@ class Marker {
   }
 }
 ```
-Here we’re creating a Marker class with two private fields: `lat` and `lng` , that means that the code below is **invalid**:
+
+Here we’re creating a Marker class with two private fields: `lat` and `lng`. See what happens if we try and access them out of scope:
+
 ```javascript
 const newMarker = new Marker(38.7652793, -9.0958296);
-newMarker.#lat; // INVALID
+newMarker.#lat; // Syntax error
 ```
-You can only reference the private fields of a class within the class that defines them. The private fields are undetectable outside of this scope:
-```javascript
-class Employee {
-  #identifier; // PRIVATE identifier
-  identifier; // PUBLIC identifier
-}
-```
-You'll notice to fields, `#identifier` and `identifier` and though on first glance they may seem like they are a private and public field with the same name, it is suggested that the `#` prepended to the private field be read as one of the characters of the name i.e. `private identifier` and `identifier`. 
 
-This also works for subclasses, that means that subclasses:
+This code is **invalid** and will throw an error. You can only reference the private fields of a class within the class that defines them.
+
+### Differences from public fields
+
+While there are obvious similarities in syntax between public and private fields, it's important to note the differences. Unlike public fields, private fields are _not properties_; they make use of lexical scoping. This has important ramifications that we'll discuss below.
+
+### Usage
+
+Let's look at some examples.
+
 ```javascript
 class Employee {
-  #identifier;
-  ...
-}
-class Manager extends Employee {
-  identifier;
-  ...
-}
-```
-Another thing to note is that this proposal allows access to private fields of other instances of the same class and that’s really useful for example when you need to create an `equals` function:
-```javascript
-class Employee {
-  #identifier;
-  ...
-  equals (other) {
-    return this.#identifier === other.#identifier;
+
+  constructor () {
+    this.#nonExistantPrivateField = 42; // Syntax error
+    this.nonExistantPublicField = 24;
   }
 }
 ```
-On the code above, we assume that `other` is an `instanceof` the class Employee.
 
-### Why use # to declare private fields?
-If you have already worked with other languages that support private fields on classes you must be used to the private keyword. That’s OK for these languages because the access to public and **private** fields are the same. On JavaScript, we can’t use `this.field` to access private fields as this would create unexpected behaviour on our code and lead to many performance issues.
+The above may seem unintuative at first, but if you remember that public fields are properties but private fields are not, it makes sense. Private fields make use of lexical scoping, so it is a syntax error to refer to # names not in scope.
 
-### Benefits of having private fields
-So, if you’re not convinced yet about why having private fields on JavaScript classes, let’s take a look when it comes to creating libraries. When you create a library, you want to provide your users with a clean and stable API. That means that you don’t want them to access things they aren’t supposed to and that you can change the work behind the curtain as long as the API remains functional. Private fields are very useful for this, let’s check a use case for that. 
+For this same reason, it's a syntax error to have multiple same-named # names in the same scope:
 
-Imagine that you’re building a library that provides Pokémon info and the code will be something like this (I’ll focus on a tiny part of what an actual library would look like, just to point what’s needed):
+```javascript
+class Employee {
+  #identifier;
+  #identifier; // Syntax error
+}
+```
+
+You can have public and private fields with the same name - because public fields cannot begin with `#` and private fields must - the two can never conflict.
+
+```javascript
+class Employee {
+  #identifier; // private identifier
+  identifier;  // public identifier
+}
+```
+
+### Initialisation
+
+Fields without initializers are initialized to undefined. As with public fields, initialisers are run in declaration order. Usefully, this is the object being constructed, so you can make use of it:
+
+```javascript
+class Employee {
+  #identifier;
+  #status = 'Employeed';
+  #name = this.generateName();
+
+  constructor () {
+    assert(this.#identifier === undefined);
+    assert(this.#status === 'Employeed');
+    assert(this.#name === 'Su Chin');
+  }
+
+  generateName () {
+    return 'Su Chin';
+  }
+}
+```
+
+### Why #?
+If you have already worked with other languages that support private fields in classes, you may be used to using the `private` keyword. That works because access to public and private fields are the same. In JavaScript we can’t use `this.field` to access private fields as this would create unexpected behaviour in our code and lead to performance issues.
+
+### Why do we need private fields at all?
+If you're not yet convinced that JavaScript needs private fields at all, let's walk through an example where they're useful: creating a library. When you create a library, you want to provide your users with a clean and stable API. That means that you don’t want them to access things they aren’t supposed to. This allows you to change how things work under the hood, so long as the API remains functional.
+
+Unfortunately, until now JavaScript has relied on convention to stop people accessing and thus relying on implementation details for their own code to work. Private fields change this.
+
+Imagine you’re building a library that provides information on Pokémon. The code will look something like this (ignoring irrelevant details):
+
 ```javascript
 class PokemonFetcher {
+
   pokemons = [];
+
   async getPokemons () {
     if (this.pokemons.length === 0) {
       this.pokemons = await this.fetchPokemons();
     }
     return this.formatResult();
   }
+
   async fetchPokemons () {
     const pokemons = await fetch(`https://myapi.com/api/v1/pokemons`);
     return pokemons.json();
   }
+
   formatResult () {
     return this.pokemons.map(pokemon => {
-      // Formats the list to the desired structure
+      // ...format the list
     });
   }
 ```
-We publish our library and put on the docs that the Pokémon info needs to be fetched using the `getPokemons` method. Taking a look at it, all seems ok, but we do have some issues. Even though the docs instruct that the users need to use the `getPokemons` method, there’s no way that we can force the user to do so, the user can try to get the Pokémons info in four different ways from our library:
+
+We publish our library and document that Pokémon info must be fetched using the `getPokemons` method. Unfortunately, despite this - we can't stop the user from getting Pokémon in other, unsupported ways. In fact there are four ways they could access them:
 
 - Using the `getPokemons` method, the one that we recommend;
-- Using the `fetchPokemons` method, but then it would fetch the API every time, making unnecessary requests and returning the results on unformatted;
-- Using the `formatResult` method, but if the `pokemons` property is empty, it won’t work;
-- Accessing the `pokemons` property directly, but it can return an empty array or an unformatted result;
+- Using the `fetchPokemons` method, (which will trigger a fetch every time, making unnecessary requests and returning the results unformatted);
+- Using the `formatResult` method (which won't work if the `pokemons` property is empty, it won’t work);
+- Accessing the `pokemons` property directly (which can return an empty array or an unformatted result);
 
-So as you can see even a small part of a library can cause many issues. And things can get even worse, imagine that some users are using the library by getting the info using the `fetchPokemons` method and for some reason we had to change the API and the results now have a different format. It would break the apps. To fix that, we need it so the users can have only a single source of truth and we can achieve that by using private fields and private methods.
+As you can see - even leaving just a few private methods and fields accessible can leave you open to several avenues of abuse. To prevent this, we need to be able to lock down our API such that consumers can only access the methods we want them to use. We can achieve this with private fields, and private methods, which we'll talk about next.
 
-### Private Methods
-Private methods essentially work the same as private fields and are prepended with the `#` symbol. Let's take a look at our updated code:
+## Private Methods
+
+Private methods are similar to their public counterparts, but have their access restricted in the same manner as private fields, also using a `#` prefix.
+
+Like private instance fields, they are added at construction time for the base classes and after super() returns for subclasses, and generator function, async function, and async generator function forms may also be private instance methods.
+
+Let's update our code above to restrict our API:
+
 ```javascript
 class PokemonFetcher {
+
   #pokemons = [];
-async getPokemons () {
+
+  async getPokemons () {
     if (this.#pokemons.length === 0) {
       this.#pokemons = await this.#fetchPokemons();
     }
     return this.#formatResult();
   }
-async #fetchPokemons () {
+
+  async #fetchPokemons () {
     const pokemons = await fetch(`https://myapi.com/api/v1/pokemons`);
     return pokemons.json();
   }
-#formatResult () {
+
+  #formatResult () {
     return this.#pokemons.map(pokemon => {
       // Formats the list to the desired structure
     });
   }
 ```
-Now, with the code above, the only source that the user can get the Pokémons info is by using the only public method: `getPokemons` . That way, we can totally change how our library works as long as the `getPokemons` method keeps its behaviour.
 
-### Conclusion
-Private fields and methods are a basic feature when working with Object-Oriented code, bringing this to the JavaScript language is taking a step forward on helping us engineers to write code, creating apps or libraries, in a much cleaner way. We hope that this article is helpful in understanding how the private fields and methods work in JavaScript and the importance of having this support on the language.
+Now, with the code above, the only source that the user can get the Pokémon info is by using the only public method: `getPokemons`. This way, we can totally change how our library works under the hood, as long as the `getPokemons` method keeps its behaviour.
+
+## Conclusion
+
+Private fields and methods are useful when working with Object-Oriented code, and bringing them to JavaScript enables engineers to write code and create apps or libraries in a much cleaner way. We hope this article has helped you to understand how private methods and fields work in JavaScript and the importance of having support for them in the language.
+
+## Acknowledgements
+
+For a detailed look at class fields and methods, read [this fantastic blog post](https://rfrn.org/~shu/2018/05/02/the-semantics-of-all-js-class-elements.html) by Shu-Yo Guo.
