@@ -114,7 +114,6 @@ class Employee {
 
 As mentioned above, because private field # names must begin with a `#`, you can use otherwise identical names for private and public variables with no issue:
 
-
 ```javascript
 class Employee {
   #identifier; // private identifier
