@@ -6,7 +6,6 @@ Fortunately classes were introduced in ECMAScript 2015 (ES6), allowing us to use
 
 ```javascript
 class Animal {
-
   constructor (name) {
     this.name = name;
   }
@@ -24,13 +23,12 @@ They also support inheritance:
 
 ```javascript
 class Dog extends Animal {
-
   constructor (name) {
     super(name);
   }
 
   whatsMyName () {
-    return `I am a dog and my name is ${this.name;}`;
+    return `I am a dog and my name is ${this.name}`;
   }
 }
 
@@ -63,7 +61,6 @@ Well, when you want to prevent others from accessing a field outside of your cla
 
 ```javascript
 class Marker {
-
   #lat;
   #lng;
 
@@ -93,24 +90,14 @@ Let's look at some examples.
 
 ```javascript
 class Employee {
-
   constructor () {
     this.nonExistentPublicField = 24;
-    this.#nonExistentPrivateField = 42; // Syntax error
+    this.#nonExistentPrivateField = 42; // Error
   }
 }
 ```
 
-While there are good reasons to declare public fields on the class, it's not strictly necessary. Private fields, on the other hand, make use of lexical scoping and so _must_ be declared. Setting `#nonExistentPrivateField` fails above because it is a syntax error to refer to # names not in scope.
-
-For this same reason, it's a syntax error to have multiple same-named # names in the same scope:
-
-```javascript
-class Employee {
-  #identifier;
-  #identifier; // Syntax error
-}
-```
+While there are good reasons to declare public fields on the class, it's not strictly necessary. Private fields, on the other hand, make use of lexical scoping and so _must_ be declared. Setting `#nonExistentPrivateField` fails above because it is an error to use a private field that's not declared, or read or write one from an object that doesn't have it.
 
 As mentioned above, because private field # names must begin with a `#`, you can use otherwise identical names for private and public variables with no issue:
 
@@ -127,7 +114,6 @@ Fields without initializers are initialized to undefined. As with public fields,
 
 ```javascript
 class Employee {
-
   #identifier;
   #status = 'Employed';
   #name = this.generateName();
@@ -156,7 +142,6 @@ Imagine you’re building a library that provides information on Pokémon. The c
 
 ```javascript
 class PokemonFetcher {
-
   pokemon = [];
 
   async getPokemon () {
@@ -197,7 +182,6 @@ Let's update our code above to restrict our API:
 
 ```javascript
 class PokemonFetcher {
-
   #pokemon = [];
 
   async getPokemon () {
@@ -225,6 +209,6 @@ In the code above, the only way the user can get Pokémon information is by usin
 
 Private fields and methods are useful when working with object-oriented code, and bringing them to JavaScript enables engineers to write code and create apps or libraries in a much cleaner way. We hope this article has helped you to understand how private methods and fields work in JavaScript and the importance of having support for them in the language.
 
-## Acknowledgements
+## Further reading
 
-For a detailed look at class fields and methods read [this fantastic blog post](https://rfrn.org/~shu/2018/05/02/the-semantics-of-all-js-class-elements.html) by Shu-yu Guo.
+For a more detailed look at class fields and methods see the [proposal](https://github.com/tc39/proposal-class-fields) or this [in depth blog post](https://rfrn.org/~shu/2018/05/02/the-semantics-of-all-js-class-elements.html) by Shu-yu Guo.
